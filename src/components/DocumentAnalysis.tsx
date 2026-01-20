@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Upload, FileText, AlertTriangle, CheckCircle, Download, Loader, Eye, Trash2, FileDown } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { localDB } from '../lib/auth';
-import { LegalDocumentAnalyzer } from '../lib/legalAnalysis';
+import { EnhancedLegalDocumentAnalyzer } from '../lib/enhancedLegalAnalysis';
 import jsPDF from 'jspdf';
 
 interface AnalysisResult {
@@ -96,17 +96,27 @@ export const DocumentAnalysis: React.FC = () => {
 
     try {
       const content = await readFileContent(file);
-      const analyzer = new LegalDocumentAnalyzer(content);
+      const analyzer = new EnhancedLegalDocumentAnalyzer(content);
+      const analysisData = analyzer.generateComprehensiveAnalysis();
 
       const result: AnalysisResult = {
         id: Date.now().toString(),
         fileName: file.name,
-        summary: analyzer.generateEnhancedSummary('detailed'),
-        keyPoints: analyzer.extractEnhancedKeyPoints(),
-        risks: analyzer.identifyEnhancedRisks(),
-        recommendations: analyzer.generateEnhancedRecommendations(),
-        confidenceScore: analyzer.getEnhancedConfidenceScore(),
-        metadata: analyzer.getEnhancedAnalysisMetadata(),
+        summary: analysisData.documentSummary,
+        keyPoints: analysisData.keyPoints,
+        risks: analysisData.risks.map(risk => `${risk.level} RISK: ${risk.description} - ${risk.remedy}`),
+        recommendations: analysisData.recommendations,
+        confidenceScore: analysisData.confidenceScore,
+        metadata: {
+          documentType: analysisData.documentInfo.type,
+          wordCount: analysisData.documentInfo.wordCount,
+          legalTermsFound: analysisData.documentInfo.legalTermsFound,
+          documentComplexity: analysisData.documentInfo.complexity,
+          complianceScore: analysisData.documentInfo.complianceScore,
+          relevantCases: analysisData.relevantCases,
+          applicableStatutes: analysisData.applicableStatutes,
+          legalTerms: analysisData.legalTerms
+        },
         createdAt: new Date().toISOString()
       };
 
