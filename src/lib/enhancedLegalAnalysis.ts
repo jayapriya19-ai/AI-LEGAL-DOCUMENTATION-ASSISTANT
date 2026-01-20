@@ -951,6 +951,16 @@ Intellectual Property: All deliverables shall be owned by the Client upon full p
     const risks = this.riskEngine.assessRisks();
     const relevantCases = this.findRelevantCases();
     const applicableStatutes = this.findApplicableStatutes();
+    
+    // Get document-specific analysis
+    const specificAnalyzer = getDocumentAnalyzer(this.documentType);
+    const specificAnalysis = specificAnalyzer.analyzeContent(this.content);
+    
+    // Merge general and specific risks
+    const allRisks = [...risks, ...specificAnalysis.specificRisks];
+    
+    // Merge general and specific recommendations
+    const allRecommendations = [...this.generateRecommendations(compliance, risks), ...specificAnalysis.specificRecommendations];
 
     return {
       confidenceScore: this.calculateConfidenceScore(),
@@ -963,12 +973,13 @@ Intellectual Property: All deliverables shall be owned by the Client upon full p
         complianceScore: compliance.score
       },
       keyPoints: this.extractKeyPoints(),
-      risks: risks,
-      recommendations: this.generateRecommendations(compliance, risks),
+      risks: allRisks,
+      recommendations: [...new Set(allRecommendations)], // Remove duplicates
       legalTerms: this.legalTerms,
       relevantCases: relevantCases,
       applicableStatutes: applicableStatutes,
-      complianceDetails: compliance
+      complianceDetails: compliance,
+      specificAnalysis: specificAnalysis
     };
   }
 
