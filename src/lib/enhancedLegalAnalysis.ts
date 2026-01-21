@@ -1007,50 +1007,282 @@ Intellectual Property: All deliverables shall be owned by the Client upon full p
   }
 
   private generateDocumentSummary(): string {
+    // Extract key document elements for accurate summary
     const parties = this.extractParties();
     const purpose = this.extractPurpose();
-    const laws = this.extractApplicableLaws();
+    const keyFinancialTerms = this.extractFinancialTerms();
+    const criticalClauses = this.extractCriticalClauses();
+    const complianceIssues = this.extractComplianceIssues();
+    const timeline = this.extractTimeline();
+    const jurisdiction = this.extractJurisdiction();
+    
+    // Generate comprehensive, document-specific summary
+    let summary = `This ${this.getDocumentTypeDescription()} `;
+    
+    if (parties.length > 0) {
+      summary += `between ${parties.join(' and ')} `;
+    }
+    
+    if (purpose) {
+      summary += `for ${purpose}. `;
+    }
+    
+    if (keyFinancialTerms.length > 0) {
+      summary += `The agreement involves financial consideration of ${keyFinancialTerms.join(', ')}. `;
+    }
+    
+    if (timeline) {
+      summary += `${timeline} `;
+    }
+    
+    if (criticalClauses.length > 0) {
+      summary += `Key provisions include ${criticalClauses.join(', ')}. `;
+    }
+    
+    if (complianceIssues.length > 0) {
+      summary += `Important compliance requirements: ${complianceIssues.join(', ')}. `;
+    }
+    
+    if (jurisdiction) {
+      summary += `${jurisdiction} `;
+    }
+    
+    // Add document complexity and legal framework
+    const complexity = this.calculateComplexity();
+    const applicableLaws = this.extractApplicableLaws();
+    
+    summary += `The document has ${complexity.toLowerCase()} legal complexity with ${this.legalTerms.length} legal terms identified. `;
+    
+    if (applicableLaws.length > 0) {
+      summary += `It is governed by ${applicableLaws.join(', ')} under Indian legal framework.`;
+    }
+    
+    return summary.trim();
+  }
 
-    return `This ${this.documentType.replace('_', ' ')} involves ${parties} for ${purpose}. The document is governed by ${laws.join(', ')} and contains ${this.legalTerms.length} legal terms with ${this.calculateComplexity().toLowerCase()} complexity level.`;
+  private getDocumentTypeDescription(): string {
+    const descriptions = {
+      'service_agreement': 'professional service agreement',
+      'employment_contract': 'employment agreement establishing the terms of employment',
+      'lease_agreement': 'property lease agreement',
+      'partnership_deed': 'partnership deed establishing business collaboration',
+      'sale_deed': 'property sale deed for transfer of ownership',
+      'loan_agreement': 'loan agreement with repayment terms',
+      'nda': 'non-disclosure agreement for confidentiality protection',
+      'court_judgment': 'court judgment or order',
+      'legal_notice': 'legal notice demanding action or remedy',
+      'petition': 'legal petition filed before court',
+      'affidavit': 'sworn affidavit statement',
+      'power_of_attorney': 'power of attorney granting legal authorization',
+      'will_testament': 'will and testament for inheritance',
+      'mou': 'memorandum of understanding',
+      'general_agreement': 'legal agreement'
+    };
+    
+    return descriptions[this.documentType as keyof typeof descriptions] || 'legal document';
   }
 
   private extractParties(): string {
+    const parties: string[] = [];
+    
+    // Enhanced party extraction patterns
     const partyPatterns = [
-      /between\s+([^,]+)\s+and\s+([^,]+)/i,
-      /party\s+of\s+the\s+first\s+part[:\s]+([^,\n]+)/i,
-      /service\s+provider[:\s]+([^,\n]+)/i,
-      /client[:\s]+([^,\n]+)/i
+      /between\s+([^,\n]+?)\s+(?:and|&)\s+([^,\n]+)/i,
+      /party\s+of\s+the\s+first\s+part[:\s]*([^,\n]+)/i,
+      /party\s+of\s+the\s+second\s+part[:\s]*([^,\n]+)/i,
+      /service\s+provider[:\s]*([^,\n]+)/i,
+      /client[:\s]*([^,\n]+)/i,
+      /employer[:\s]*([^,\n]+)/i,
+      /employee[:\s]*([^,\n]+)/i,
+      /landlord[:\s]*([^,\n]+)/i,
+      /tenant[:\s]*([^,\n]+)/i,
+      /lender[:\s]*([^,\n]+)/i,
+      /borrower[:\s]*([^,\n]+)/i,
+      /vendor[:\s]*([^,\n]+)/i,
+      /purchaser[:\s]*([^,\n]+)/i,
+      /plaintiff[:\s]*([^,\n]+)/i,
+      /defendant[:\s]*([^,\n]+)/i
     ];
 
     for (const pattern of partyPatterns) {
       const match = this.content.match(pattern);
       if (match) {
-        return match[1] ? `${match[1]} and other parties` : 'multiple parties';
+        if (match[1]) parties.push(match[1].trim());
+        if (match[2]) parties.push(match[2].trim());
+        if (parties.length >= 2) break;
       }
     }
 
-    return 'the contracting parties';
+    return parties.length > 0 ? parties : [];
   }
 
   private extractPurpose(): string {
+    // Enhanced purpose extraction with document-specific patterns
     const purposePatterns = [
-      /purpose[:\s]+([^.]+)/i,
-      /scope\s+of\s+work[:\s]+([^.]+)/i,
-      /services[:\s]+([^.]+)/i,
-      /whereas[^,]*,\s*([^;]+)/i
+      /purpose[:\s]+([^.\n]+)/i,
+      /scope\s+of\s+(?:work|services)[:\s]+([^.\n]+)/i,
+      /services[:\s]+([^.\n]+)/i,
+      /whereas[^,]*,\s*([^;.\n]+)/i,
+      /agreement\s+is\s+for\s+([^.\n]+)/i,
+      /contract\s+is\s+for\s+([^.\n]+)/i,
+      /hereby\s+agree\s+to\s+([^.\n]+)/i,
+      /nature\s+of\s+(?:business|work)[:\s]+([^.\n]+)/i
     ];
 
     for (const pattern of purposePatterns) {
       const match = this.content.match(pattern);
       if (match && match[1]) {
-        return match[1].trim().toLowerCase();
+        let purpose = match[1].trim();
+        // Clean up the purpose text
+        purpose = purpose.replace(/^(the\s+)?/i, '');
+        return purpose.length > 100 ? purpose.substring(0, 100) + '...' : purpose;
       }
     }
 
-    return this.documentType.includes('service') ? 'provision of services' :
-           this.documentType.includes('employment') ? 'employment relationship' :
-           this.documentType.includes('lease') ? 'property lease' :
-           'contractual obligations';
+    // Fallback based on document type
+    const fallbacks = {
+      'service_agreement': 'provision of professional services',
+      'employment_contract': 'establishing employment relationship and terms',
+      'lease_agreement': 'leasing of property premises',
+      'partnership_deed': 'establishing business partnership',
+      'sale_deed': 'sale and transfer of property',
+      'loan_agreement': 'providing loan with repayment terms',
+      'nda': 'protection of confidential information',
+      'court_judgment': 'judicial decision on legal matter',
+      'legal_notice': 'formal legal demand or notice',
+      'petition': 'seeking legal remedy from court'
+    };
+    
+    return fallbacks[this.documentType as keyof typeof fallbacks] || 'legal obligations and rights';
+  }
+
+  private extractFinancialTerms(): string[] {
+    const financialTerms: string[] = [];
+    
+    // Extract Indian currency amounts
+    const currencyPatterns = [
+      /₹\s*[\d,]+(?:\.\d{2})?/g,
+      /rs\.?\s*[\d,]+(?:\.\d{2})?/gi,
+      /rupees\s+[\d,]+/gi,
+      /inr\s*[\d,]+/gi
+    ];
+    
+    currencyPatterns.forEach(pattern => {
+      const matches = this.content.match(pattern);
+      if (matches) {
+        financialTerms.push(...matches.slice(0, 3)); // Limit to first 3 amounts
+      }
+    });
+    
+    // Extract payment terms
+    const paymentPatterns = [
+      /(?:monthly|annual|yearly)\s+(?:salary|rent|payment)[:\s]*₹?[\d,]+/gi,
+      /(?:advance|deposit|security)[:\s]*₹?[\d,]+/gi,
+      /(?:total|contract)\s+value[:\s]*₹?[\d,]+/gi
+    ];
+    
+    paymentPatterns.forEach(pattern => {
+      const matches = this.content.match(pattern);
+      if (matches) {
+        financialTerms.push(...matches.slice(0, 2));
+      }
+    });
+    
+    return [...new Set(financialTerms)]; // Remove duplicates
+  }
+
+  private extractCriticalClauses(): string[] {
+    const clauses: string[] = [];
+    const lowerContent = this.content.toLowerCase();
+    
+    // Document-specific critical clauses
+    const clauseChecks = [
+      { clause: 'termination provisions', patterns: ['termination', 'terminate', 'end of agreement'] },
+      { clause: 'payment terms', patterns: ['payment', 'consideration', 'remuneration'] },
+      { clause: 'dispute resolution', patterns: ['arbitration', 'dispute', 'mediation'] },
+      { clause: 'intellectual property rights', patterns: ['intellectual property', 'copyright', 'ip rights'] },
+      { clause: 'confidentiality obligations', patterns: ['confidential', 'non-disclosure', 'proprietary'] },
+      { clause: 'force majeure', patterns: ['force majeure', 'act of god', 'unforeseeable'] },
+      { clause: 'governing law', patterns: ['governing law', 'jurisdiction', 'indian law'] },
+      { clause: 'indemnification', patterns: ['indemnify', 'hold harmless', 'liability'] }
+    ];
+    
+    clauseChecks.forEach(check => {
+      const found = check.patterns.some(pattern => lowerContent.includes(pattern));
+      if (found) {
+        clauses.push(check.clause);
+      }
+    });
+    
+    return clauses;
+  }
+
+  private extractComplianceIssues(): string[] {
+    const compliance: string[] = [];
+    const lowerContent = this.content.toLowerCase();
+    
+    // Check for various compliance requirements
+    if (lowerContent.includes('gst') || lowerContent.includes('goods and services tax')) {
+      compliance.push('GST compliance addressed');
+    } else if (this.documentType === 'service_agreement') {
+      compliance.push('GST compliance missing');
+    }
+    
+    if (lowerContent.includes('stamp duty') || lowerContent.includes('stamp')) {
+      compliance.push('stamp duty provisions included');
+    } else if (['lease_agreement', 'sale_deed'].includes(this.documentType)) {
+      compliance.push('stamp duty requirements not addressed');
+    }
+    
+    if (lowerContent.includes('provident fund') || lowerContent.includes('pf')) {
+      compliance.push('PF compliance included');
+    } else if (this.documentType === 'employment_contract') {
+      compliance.push('PF compliance missing');
+    }
+    
+    if (lowerContent.includes('registration')) {
+      compliance.push('registration requirements mentioned');
+    }
+    
+    return compliance;
+  }
+
+  private extractTimeline(): string {
+    const timelinePatterns = [
+      /(?:duration|period|term)[:\s]*([^.\n]+)/i,
+      /(?:commencing|starting)\s+(?:from|on)\s+([^.\n]+)/i,
+      /(?:valid|effective)\s+(?:for|from)\s+([^.\n]+)/i,
+      /(?:tenure|timeline)[:\s]*([^.\n]+)/i
+    ];
+    
+    for (const pattern of timelinePatterns) {
+      const match = this.content.match(pattern);
+      if (match && match[1]) {
+        const timeline = match[1].trim();
+        return `Duration: ${timeline.length > 50 ? timeline.substring(0, 50) + '...' : timeline}.`;
+      }
+    }
+    
+    return '';
+  }
+
+  private extractJurisdiction(): string {
+    const jurisdictionPatterns = [
+      /jurisdiction\s+of\s+([^.\n]+)/i,
+      /courts?\s+(?:at|in|of)\s+([^.\n]+)/i,
+      /subject\s+to\s+(?:the\s+)?jurisdiction\s+of\s+([^.\n]+)/i,
+      /governed\s+by\s+(?:the\s+)?laws?\s+of\s+([^.\n]+)/i
+    ];
+    
+    for (const pattern of jurisdictionPatterns) {
+      const match = this.content.match(pattern);
+      if (match && match[1]) {
+        const jurisdiction = match[1].trim();
+        return `Jurisdiction: ${jurisdiction}.`;
+      }
+    }
+    
+    return '';
   }
 
   private extractApplicableLaws(): string[] {
