@@ -1,6 +1,8 @@
 // Enhanced Indian Legal Analysis Engine with Comprehensive Legal Database
 // This module provides sophisticated document-specific analysis with expanded legal knowledge
 
+import { getDocumentAnalyzer } from './documentSpecificAnalysis';
+
 interface LegalCase {
   title: string;
   citation: string;
