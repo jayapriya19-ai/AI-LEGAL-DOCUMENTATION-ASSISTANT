@@ -2,6 +2,7 @@
 // This module provides sophisticated document-specific analysis with expanded legal knowledge
 
 import { getDocumentAnalyzer } from './documentSpecificAnalysis';
+import { IndianKanoonSampleAnalyzer } from './indianKanoonAnalyzer';
 
 interface LegalCase {
   title: string;
@@ -1007,57 +1008,9 @@ Intellectual Property: All deliverables shall be owned by the Client upon full p
   }
 
   private generateDocumentSummary(): string {
-    // Extract key document elements for accurate summary
-    const parties = this.extractParties();
-    const purpose = this.extractPurpose();
-    const keyFinancialTerms = this.extractFinancialTerms();
-    const criticalClauses = this.extractCriticalClauses();
-    const complianceIssues = this.extractComplianceIssues();
-    const timeline = this.extractTimeline();
-    const jurisdiction = this.extractJurisdiction();
-    
-    // Generate comprehensive, document-specific summary
-    let summary = `This ${this.getDocumentTypeDescription()} `;
-    
-    if (parties.length > 0) {
-      summary += `between ${parties.join(' and ')} `;
-    }
-    
-    if (purpose) {
-      summary += `for ${purpose}. `;
-    }
-    
-    if (keyFinancialTerms.length > 0) {
-      summary += `The agreement involves financial consideration of ${keyFinancialTerms.join(', ')}. `;
-    }
-    
-    if (timeline) {
-      summary += `${timeline} `;
-    }
-    
-    if (criticalClauses.length > 0) {
-      summary += `Key provisions include ${criticalClauses.join(', ')}. `;
-    }
-    
-    if (complianceIssues.length > 0) {
-      summary += `Important compliance requirements: ${complianceIssues.join(', ')}. `;
-    }
-    
-    if (jurisdiction) {
-      summary += `${jurisdiction} `;
-    }
-    
-    // Add document complexity and legal framework
-    const complexity = this.calculateComplexity();
-    const applicableLaws = this.extractApplicableLaws();
-    
-    summary += `The document has ${complexity.toLowerCase()} legal complexity with ${this.legalTerms.length} legal terms identified. `;
-    
-    if (applicableLaws.length > 0) {
-      summary += `It is governed by ${applicableLaws.join(', ')} under Indian legal framework.`;
-    }
-    
-    return summary.trim();
+    // Use AI-powered analysis for user-friendly summaries
+    const aiAnalyzer = new IndianKanoonSampleAnalyzer(this.content, this.documentType);
+    return aiAnalyzer.generateUserFriendlySummary();
   }
 
   private getDocumentTypeDescription(): string {

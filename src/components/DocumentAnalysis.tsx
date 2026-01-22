@@ -102,7 +102,7 @@ export const DocumentAnalysis: React.FC = () => {
       const result: AnalysisResult = {
         id: Date.now().toString(),
         fileName: file.name,
-        summary: analysisData.documentSummary,
+        summary: this.formatUserFriendlySummary(analysisData.documentSummary),
         keyPoints: analysisData.keyPoints,
         risks: analysisData.risks.map(risk => `${risk.level} RISK: ${risk.description} - ${risk.remedy}`),
         recommendations: analysisData.recommendations,
@@ -140,6 +140,15 @@ export const DocumentAnalysis: React.FC = () => {
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  const formatUserFriendlySummary = (summary: string): string => {
+    // Convert markdown-style summary to HTML for better display
+    return summary
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/📋|👥|🎯|💰|⏰|✅|📝|⚠️|🚀/g, '')
+      .replace(/\n\n/g, '<br><br>')
+      .replace(/\n/g, '<br>');
   };
 
   const readFileContent = async (file: File): Promise<string> => {
@@ -431,9 +440,12 @@ Please consult with qualified legal counsel before making any legal decisions.`;
               <div className="bg-gray-50 rounded-lg p-6">
                 <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
                   <FileText className="w-5 h-5 mr-2 text-[#0e7b7f]" />
-                  Document Summary
+                  Easy-to-Understand Summary
                 </h4>
-                <p className="text-gray-700 text-sm leading-relaxed">{analysisResult.summary}</p>
+                <div 
+                  className="text-gray-700 text-sm leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: analysisResult.summary }}
+                />
               </div>
 
               {/* Metadata */}
