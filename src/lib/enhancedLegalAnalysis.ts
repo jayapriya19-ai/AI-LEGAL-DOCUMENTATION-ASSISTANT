@@ -177,36 +177,81 @@ class DocumentClassifier {
   }
 
   classifyDocument(): string {
-    const classifications = {
-      'service_agreement': this.isServiceAgreement(),
-      'employment_contract': this.isEmploymentContract(),
-      'lease_agreement': this.isLeaseAgreement(),
-      'partnership_deed': this.isPartnershipDeed(),
-      'sale_deed': this.isSaleDeed(),
-      'loan_agreement': this.isLoanAgreement(),
-      'nda': this.isNDA(),
-      'court_judgment': this.isCourtJudgment(),
-      'legal_notice': this.isLegalNotice(),
-      'petition': this.isPetition(),
-      'affidavit': this.isAffidavit(),
-      'power_of_attorney': this.isPowerOfAttorney(),
-      'will_testament': this.isWillTestament(),
-      'mou': this.isMOU(),
-      'general_agreement': this.isGeneralAgreement()
+    // Accurate classification - check court documents first
+    const documentTypes = {
+      'court_judgment': [
+        /judgment|judgement/i, /order/i, /decree/i, /court/i, /justice/i,
+        /plaintiff/i, /defendant/i, /petitioner/i, /respondent/i,
+        /vs\.?|versus/i, /civil\s+suit/i, /criminal\s+case/i,
+        /high\s+court/i, /supreme\s+court/i, /district\s+court/i
+      ],
+      'legal_notice': [
+        /legal\s+notice/i, /notice/i, /demand/i, /breach/i, /violation/i,
+        /remedy/i, /legal\s+action/i, /cause\s+of\s+action/i
+      ],
+      'petition': [
+        /petition/i, /writ/i, /mandamus/i, /certiorari/i, /habeas\s+corpus/i,
+        /constitutional/i, /fundamental\s+rights/i
+      ],
+      'affidavit': [
+        /affidavit/i, /sworn\s+statement/i, /deponent/i, /oath/i,
+        /affirmation/i, /notary/i, /solemnly\s+affirm/i
+      ],
+      'service_agreement': [
+        /service\s+agreement/i, /professional\s+services/i, /consulting/i,
+        /software\s+development/i, /technical\s+services/i
+      ],
+      'employment_contract': [
+        /employment\s+agreement/i, /appointment\s+letter/i, /offer\s+letter/i,
+        /job\s+contract/i, /employment\s+terms/i
+      ],
+      'lease_agreement': [
+        /lease\s+agreement/i, /lease\s+deed/i, /rent\s+agreement/i,
+        /tenancy/i, /rental\s+agreement/i
+      ],
+      'partnership_deed': [
+        /partnership\s+deed/i, /partnership\s+agreement/i, /firm\s+agreement/i
+      ],
+      'sale_deed': [
+        /sale\s+deed/i, /conveyance\s+deed/i, /property\s+sale/i,
+        /transfer\s+deed/i
+      ],
+      'loan_agreement': [
+        /loan\s+agreement/i, /credit\s+facility/i, /financing/i,
+        /borrowing\s+agreement/i
+      ],
+      'nda': [
+        /non-disclosure/i, /confidentiality\s+agreement/i, /nda/i,
+        /proprietary\s+information/i
+      ],
+      'mou': [
+        /memorandum\s+of\s+understanding/i, /mou/i, /understanding/i
+      ],
+      'power_of_attorney': [
+        /power\s+of\s+attorney/i, /mukhtarnama/i, /attorney/i, /agent/i
+      ]
     };
 
-    // Find the classification with highest score
+    // Score each document type
     let maxScore = 0;
-    let documentType = 'general_agreement';
+    let bestType = 'general_agreement';
 
-    for (const [type, score] of Object.entries(classifications)) {
+    for (const [type, patterns] of Object.entries(documentTypes)) {
+      let score = 0;
+      for (const pattern of patterns) {
+        const matches = this.lowerContent.match(pattern);
+        if (matches) {
+          score += matches.length;
+        }
+      }
+      
       if (score > maxScore) {
         maxScore = score;
-        documentType = type;
+        bestType = type;
       }
     }
 
-    return documentType;
+    return bestType;
   }
 
   private isServiceAgreement(): number {
