@@ -102,7 +102,7 @@ export const DocumentAnalysis: React.FC = () => {
       const result: AnalysisResult = {
         id: Date.now().toString(),
         fileName: file.name,
-        summary: this.formatUserFriendlySummary(analysisData.documentSummary),
+        summary: formatUserFriendlySummary(analysisData.documentSummary),
         keyPoints: analysisData.keyPoints,
         risks: analysisData.risks.map(risk => `${risk.level} RISK: ${risk.description} - ${risk.remedy}`),
         recommendations: analysisData.recommendations,
